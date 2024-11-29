@@ -9,8 +9,8 @@ import (
 	"context"
 )
 
-const addAccountBalance = `-- name: AddAccountBalance :many
-UPDATE accounts 
+const addAccountBalance = `-- name: AddAccountBalance :one
+UPDATE accounts
 SET balance = balance + $1
 WHERE id = $2
 RETURNING id, owner, balance, currency, created_at
@@ -21,33 +21,17 @@ type AddAccountBalanceParams struct {
 	ID     int64 `json:"id"`
 }
 
-func (q *Queries) AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) ([]Account, error) {
-	rows, err := q.db.QueryContext(ctx, addAccountBalance, arg.Amount, arg.ID)
-	if err != nil {
-		return nil, err
-	}
-	defer rows.Close()
-	var items []Account
-	for rows.Next() {
-		var i Account
-		if err := rows.Scan(
-			&i.ID,
-			&i.Owner,
-			&i.Balance,
-			&i.Currency,
-			&i.CreatedAt,
-		); err != nil {
-			return nil, err
-		}
-		items = append(items, i)
-	}
-	if err := rows.Close(); err != nil {
-		return nil, err
-	}
-	if err := rows.Err(); err != nil {
-		return nil, err
-	}
-	return items, nil
+func (q *Queries) AddAccountBalance(ctx context.Context, arg AddAccountBalanceParams) (Account, error) {
+	row := q.db.QueryRowContext(ctx, addAccountBalance, arg.Amount, arg.ID)
+	var i Account
+	err := row.Scan(
+		&i.ID,
+		&i.Owner,
+		&i.Balance,
+		&i.Currency,
+		&i.CreatedAt,
+	)
+	return i, err
 }
 
 const createAccount = `-- name: CreateAccount :one
