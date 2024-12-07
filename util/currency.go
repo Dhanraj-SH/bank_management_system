@@ -1,13 +1,15 @@
 package util
 
-const(
+// Constants for all supported currencies
+const (
 	USD = "USD"
 	EUR = "EUR"
 	CAD = "CAD"
 )
 
+// IsSupportedCurrency returns true if the currency is supported
 func IsSupportedCurrency(currency string) bool {
-	switch currency{
+	switch currency {
 	case USD, EUR, CAD:
 		return true
 	}
